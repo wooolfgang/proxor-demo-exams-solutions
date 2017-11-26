@@ -24,7 +24,7 @@ import java.util.StringTokenizer;
 public class SpreadSheet extends JFrame {
     private static final long serialVersionUID = 1L;
     final int maxCols = 10; // the size of the spreadsheet is fixed
-    	// maxCols <= 26 because columns are named by letters A-Z
+    // maxCols <= 26 because columns are named by letters A-Z
     final int maxRows = 10;
     // GridLayout is used to organize cells into a matrix
     GridLayout spreadSheetLayout = new GridLayout(0, maxCols + 1);
@@ -49,43 +49,43 @@ public class SpreadSheet extends JFrame {
         String formula; // the formula from which the value is computed
         Boolean valid; // cellsTF has correct current value
         Boolean bottom; // value is undefined
-        
+
         Cell() {
             init();
-        }
-        
+        }           
+
         public void init() {
-        	formula = "";
-        	valid = false;
-        	bottom = false;
+            formula = "";
+            valid = false;
+            bottom = false;
         }
     }
     private Cell cells[][] = new Cell[maxRows][maxCols];
     private JTextField cellsTF[][] = new JTextField[maxRows][maxCols];
-    
+
     // The formula is editable text at the top of the spreadsheet
     private JTextField formula;
     // what field is in the "formula edit bar" at the top of the spreadsheet
     private int editRow = 0;
     private int editCol = 0;
 
-    
+
     // look up a formula
     public String getCellFormula(int row, int col) {
-    	return cells[row][col].formula;
+        return cells[row][col].formula;
     }
-    
+
     // set a cell to a value or a formula (during evaluate(), the
     // field will be evaluated and copied to the displayed text field.
-	public void setCell(int row, int col, String field) {
-		cells[row][col].formula = field;
-	}
-    
+    public void setCell(int row, int col, String field) {
+        cells[row][col].formula = field;
+    }
+
     // look up text for a cell
     public String getCellText(int row, int col) {
-    	return cellsTF[row][col].getText();
+        return cellsTF[row][col].getText();
     }
-    
+
 
     // evaluate a token, which may be a reference to another cell or
     // simply a string. To avoid circular dependencies, the depth
@@ -93,7 +93,7 @@ public class SpreadSheet extends JFrame {
     // Returns a string if value is valid, otherwise null.
     public String evaluateToken(String tok, int depth) {
         if (tok.length() >= 2 && tok.charAt(0) >= 'A' && 
-            tok.charAt(0) < (char) ('A' + maxCols)) {
+                tok.charAt(0) < (char) ('A' + maxCols)) {
             int col = tok.charAt(0) - 'A';
             int row = Integer.parseInt(tok.substring(1)) - 1;
             if (row >= 0 && row < maxRows) {
@@ -111,24 +111,24 @@ public class SpreadSheet extends JFrame {
      */
     protected String add(String x, String y) throws NumberFormatException {
         return Double.toString(Double.parseDouble(x.trim()) + 
-                               Double.parseDouble(y.trim()));
+                Double.parseDouble(y.trim()));
     }
 
     protected String multiply(String x, String y) throws NumberFormatException {
         return Double.toString(Double.parseDouble(x.trim()) * 
-                               Double.parseDouble(y.trim()));
+                Double.parseDouble(y.trim()));
     }
 
     protected String divide(String x, String y) throws NumberFormatException {
         return Double.toString(Double.parseDouble(x.trim()) / 
-                               Double.parseDouble(y.trim()));
+                Double.parseDouble(y.trim()));
     }
 
     protected String subtract(String x, String y) throws NumberFormatException {
         return Double.toString(Double.parseDouble(x.trim()) - 
-                               Double.parseDouble(y.trim()));
+                Double.parseDouble(y.trim()));
     }
-    
+
     // parse and evaluate formula after it has been broken into tokens
     // formulas are tokens containing either
     // 1. references to cells of the form Lnn, where
@@ -153,66 +153,66 @@ public class SpreadSheet extends JFrame {
                 if (tok2.equals("+")) {
                     tok = add(tok, tok3);
                 } else if (tok2.equals("*")) {
-                	tok = multiply(tok, tok3);
+                    tok = multiply(tok, tok3);
                 } else if (tok2.equals("/")) {
-                	tok = divide(tok, tok3);
+                    tok = divide(tok, tok3);
                 } else if (tok2.equals("-")) {
-                	tok = subtract(tok, tok3);
+                    tok = subtract(tok, tok3);
                 } else return null; // invalid operator
             }
             return tok;
         }
         return null;
     }
-   
+
     // evaluates the given formula for cases such as averaging cells
     // if it's a normal formula, parse the formula normally
     public String evaluateFormula(String formula, int depth) {
-    		StringTokenizer tokens = new StringTokenizer(formula, "=+*/-", true);
-    		String[] formulaToks = formula.split("[\\(\\):]");
-    		
-    		if (tokens.hasMoreTokens()) {
-    			if (tokens.nextToken().equals("=") && !formula.contains("AVG")) {
-    				return parseFormula(tokens, depth);
-    			} else if (formulaToks[0].equalsIgnoreCase("=AVG") && formulaToks.length == 3) {
-    				String cell1 = formulaToks[1], cell2 = formulaToks[2];
-    				char fixedChar = cell1.charAt(1); 	    	// fixed cell character
-    				char variableCell1 = cell1.charAt(0); 	// cell character that changes 
-    				char variableCell2 = cell2.charAt(0);
-    				
-    				if (cell1.charAt(0) == cell2.charAt(0)) {
-    					fixedChar = cell1.charAt(0);
-    					variableCell1 = cell1.charAt(1);
-    					variableCell2 = cell2.charAt(1);
-    				}
-    				if (cell1.charAt(0) != cell2.charAt(0) && 
-    					cell1.charAt(1) != cell2.charAt(1)) return null;
+        StringTokenizer tokens = new StringTokenizer(formula, "=+*/-", true);
+        String[] formulaToks = formula.split("[\\(\\):]");
 
-    				char start = (char) Math.min(variableCell1, variableCell2);
-    				char end = (char) Math.max(variableCell1, variableCell2);
-    				String total = "";
-    				int count = 0;
-    				
-    				for (char i = start; i <= end; i++) {
-    					if (cell1.charAt(0) == cell2.charAt(0)) {
-    						total += String.valueOf(fixedChar) + String.valueOf(i) ;
-    					} else {
-    						total += String.valueOf(i) + String.valueOf(fixedChar);
-    					}
-    					if (i != end) total += "+";
-    					count++;
-    				}
-    				
-    				total = parseFormula(new StringTokenizer(total, "=+*/-", true), depth);
-    				if (total == null) return null;
-    				Double avg = Double.parseDouble(total) / count;
-    				return avg.toString();
-    			}
-    			return null;
-    		} 
-    		return null;
+        if (tokens.hasMoreTokens()) {
+            if (tokens.nextToken().equals("=") && !formula.contains("AVG")) {
+                return parseFormula(tokens, depth);
+            } else if (formulaToks[0].equalsIgnoreCase("=AVG") && formulaToks.length == 3) {
+                String cell1 = formulaToks[1], cell2 = formulaToks[2];
+                char fixedChar = cell1.charAt(1); 	    	// fixed cell character
+                char variableCell1 = cell1.charAt(0); 	// cell character that changes 
+                char variableCell2 = cell2.charAt(0);
+
+                if (cell1.charAt(0) == cell2.charAt(0)) {
+                    fixedChar = cell1.charAt(0);
+                    variableCell1 = cell1.charAt(1);
+                    variableCell2 = cell2.charAt(1);
+                }
+                if (cell1.charAt(0) != cell2.charAt(0) && 
+                        cell1.charAt(1) != cell2.charAt(1)) return null;
+
+                char start = (char) Math.min(variableCell1, variableCell2);
+                char end = (char) Math.max(variableCell1, variableCell2);
+                String total = "";
+                int count = 0;
+
+                for (char i = start; i <= end; i++) {
+                    if (cell1.charAt(0) == cell2.charAt(0)) {
+                        total += String.valueOf(fixedChar) + String.valueOf(i) ;
+                    } else {
+                        total += String.valueOf(i) + String.valueOf(fixedChar);
+                    }
+                    if (i != end) total += "+";
+                    count++;
+                }
+
+                total = parseFormula(new StringTokenizer(total, "=+*/-", true), depth);
+                if (total == null) return null;
+                Double avg = Double.parseDouble(total) / count;
+                return avg.toString();
+            }
+            return null;
+        } 
+        return null;
     }
-    
+
     // evaluate a given cell. Cells can depend on other cells. To prevent
     // infinite recursion in the case of cycles, depth keeps track of the
     // length of the dependency chain. The longest chain involves all cells
@@ -223,11 +223,11 @@ public class SpreadSheet extends JFrame {
         if (formula.length() > 0 && formula.charAt(0) == '=') {
             try {
                 if (depth <= maxRows * maxCols) {
-                		String val = evaluateFormula(formula, depth);
-                		if (val != null) {
-                			cellsTF[r][c].setText(val);
-                			cells[r][c].valid = true;
-                			return;
+                    String val = evaluateFormula(formula, depth);
+                    if (val != null) {
+                        cellsTF[r][c].setText(val);
+                        cells[r][c].valid = true;
+                        return;
                     }
                 }
             } catch (NumberFormatException e) {
@@ -240,8 +240,8 @@ public class SpreadSheet extends JFrame {
             cellsTF[r][c].setText(formula);
         }
     }
-    
-    
+
+
     // evaluate every cell in the spreadsheet
     public void evaluate() {
         // do not copy text fields generated from formulas
@@ -262,7 +262,7 @@ public class SpreadSheet extends JFrame {
         }
         ignoreTextFieldAction = false;
     }
-    
+
     // find the coordinates of a cell that has changed
     public Point findCellTF(JTextField cell) {
         // find the cell that was changed
@@ -275,8 +275,8 @@ public class SpreadSheet extends JFrame {
         }
         return null;
     }
-    
-    
+
+
     // called when user types enter (action event) or 
     // changes focus (focus event)
     public void cellChanged(JTextField cell) {
@@ -302,7 +302,7 @@ public class SpreadSheet extends JFrame {
             cellChanged((JTextField) e.getSource());
         }
     }
-    
+
     private ActionListener cellActionListener = new CellActionListener();
 
 
@@ -321,7 +321,7 @@ public class SpreadSheet extends JFrame {
 
     private FocusListener cellFocusListener = new CellFocusListener();
 
-    
+
     // when the user types Enter into formula text, set the formula
     private class FormulaActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
@@ -342,24 +342,24 @@ public class SpreadSheet extends JFrame {
     public void addComponentsToPane(final Container pane) {
         final JPanel spreadSheetGrid = new JPanel();
         spreadSheetGrid.setLayout(spreadSheetLayout);
-        
+
         //Set up components preferred size
         JTextField tf = new JTextField("example text");
         Dimension cellSize = tf.getPreferredSize();
         spreadSheetGrid.setPreferredSize(
                 new Dimension((int)(cellSize.getWidth() * maxCols),
-                              (int)(cellSize.getHeight() * maxRows)));
-        
+                        (int)(cellSize.getHeight() * maxRows)));
+
         // First Row/Col is unused
         spreadSheetGrid.add(new JTextArea(""));
-        
+
         // Add column headings
         for (int c = 0; c < maxCols; c++) {
             JTextArea label = 
                     new JTextArea(Character.toString((char) ('A' + c)));
             label.setEditable(false);
             spreadSheetGrid.add(label);
-                    
+
         }
         // Add text fields as cells
         for (int r = 0; r < maxRows; r++) {
@@ -387,7 +387,7 @@ public class SpreadSheet extends JFrame {
         pane.add(new JTextArea(), BorderLayout.SOUTH);
     }
 
-    
+
     /**
      * Create the GUI and show it.  For thread safety,
      * this method is invoked from the
@@ -403,7 +403,7 @@ public class SpreadSheet extends JFrame {
         frame.pack();
         frame.setVisible(true);
     }
-    
+
     public static void main(String[] args) {        
         //Schedule a job for the event dispatch thread:
         //creating and showing this application's GUI.
