@@ -164,7 +164,7 @@ public class SpreadSheet extends JFrame {
         }
         return null;
     }
-    
+   
     // evaluates the given formula for cases such as averaging cells
     // if it's a normal formula, parse the formula normally
     public String evaluateFormula(String formula, int depth) {
