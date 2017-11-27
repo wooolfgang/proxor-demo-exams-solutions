@@ -210,7 +210,7 @@ public class SpreadSheet extends JFrame {
     }
     
     // limits the formula display to 8 characters
-    public String limitFormula(String formula) {
+    private String limitFormula(String formula) {
         try {
             double exp = Double.parseDouble(formula);
             String newFormula = String.format("%.7g", exp);
