@@ -1,0 +1,40 @@
+<?eclipse.ant.import?>
+<project>
+	<property name="submission.name" value="${user.home}/exam-submission/${ant.project.name}-submission.zip" />
+	<target name="test">
+		<junit printsummary="on" haltonfailure="no">
+			<classpath>
+				<pathelement location="bin" />
+				<pathelement location="../javacsv/bin" />
+				<pathelement location="/usr/share/java/ant-junit.jar" />
+				<pathelement location="/usr/share/java/junit.jar" />
+			</classpath>
+			<formatter type="xml" usefile="true" />
+
+			<batchtest>
+				<fileset dir="src">
+					<include name="**/*Test*" />
+					<exclude name="**/*FailTest*" />
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
+
+	<target depends="test" name="submission">
+		<delete file="${submission.name}" />
+		<zip destfile="${submission.name}">
+ 			<fileset dir="." includes="TEST*,src/**" />
+		</zip>
+		<echo>
+WARNING!!!
+Your solution has been submitted.  HOWEVER, you should carefully review
+the output from the JUnit test listed above.
+If your solution does not pass this JUnit test without any errors or
+failures, it is unlikely to be even minimally correct!
+
+If the test of your solution resulted in an error, you may need to invoke
+"ant build" first in order to ensure that it is built correctly for the
+JUnit test to run.
+		</echo>
+	</target>
+</project>
