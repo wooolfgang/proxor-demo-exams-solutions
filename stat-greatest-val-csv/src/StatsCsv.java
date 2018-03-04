@@ -4,8 +4,7 @@
 // should be modified and extended to meet the specifications.
 
 import java.io.IOException;
-import com.csvreader.CsvReader;
-import com.csvreader.CsvWriter;
+import com.csvreader.*;
 
 public class StatsCsv {
     
@@ -32,37 +31,42 @@ public class StatsCsv {
     public void writeSheet() throws IOException {
         // 
         // to be completed
-        // Do not change the signature of this method.
-        CsvWriter w = new CsvWriter(outFile);
-        for (int i = 0; i < rowsUsed; i++) {
-            for (int j = 0; j < colsUsed; j++) {
-                w.write(sheet[i][j]);
+    	//  Do not change the signature of this method.
+        CsvWriter writer = new CsvWriter(outFile);
+        
+        for (int i = 0; i < getRows(); i++) {
+            for (int j = 0; j < getCols(); j++) {
+                writer.write(sheet[i][j]);
             }
-            w.endRecord();
+            writer.endRecord();
         }
-        w.close();
+        
+        writer.close();
     }
 
     public void readSheet() throws IOException {
-        //         
-        //         to be completed
-        //    	      Do not change the signature of this method.
-        CsvReader r = new CsvReader(inFile);
-        int rowI = 0; 
-        int colI = 0;
-        while (r.readRecord()) {
-            for (colI = 0; colI < r.getColumnCount(); colI++) {
-                sheet[rowI][colI] = r.get(colI);
+        // 
+        // to be completed
+    	//  Do not change the signature of this method.
+        CsvReader reader = new CsvReader(inFile);
+        
+        int row = 0;
+        int col = 0;
+        
+        while (reader.readRecord()) {
+            for (col = 0; col < reader.getColumnCount(); col++) {
+                sheet[row][col] = reader.get(col);
             }
-            rowI++;
+            row++;
         }
-        rowsUsed = rowI;
-        colsUsed = colI;
-        r.close();
+        
+        setRows(row);
+        setCols(col);
+        reader.close();
     }
 
     public int getRows() {
-    	return rowsUsed;
+        return rowsUsed;
     }
     
     public int setRows(int r) {
@@ -71,10 +75,15 @@ public class StatsCsv {
     }
 
     public int getCols() {
-    	return colsUsed;
+        return colsUsed;
+    }
+    
+    public int setCols(int c) {
+        colsUsed = c;
+        return colsUsed;
     }
     
     public String[][] getData() {
-    	return sheet;
+        return sheet;
     }
 }

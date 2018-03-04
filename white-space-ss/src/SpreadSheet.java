@@ -175,7 +175,8 @@ public class SpreadSheet extends JFrame {
         if (formula.length() > 0 && formula.charAt(0) == '=') {
             try {
                 if (depth <= maxRows * maxCols) {
-                    StringTokenizer tokens = new StringTokenizer(formula.replaceAll("\\s", ""), "=+*/-", true);
+                    StringTokenizer tokens = 
+                            new StringTokenizer(formula.replaceAll(" ", ""), "=+*/-", true);
                     if (tokens.hasMoreTokens() && 
                         (tokens.nextToken().equals("="))) {
                         String val = parseFormula(tokens, depth);

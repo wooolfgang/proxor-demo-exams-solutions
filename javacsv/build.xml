@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- WARNING: Eclipse auto-generated file.
+              Any modifications will be overwritten.
+              To include a user specific buildfile here, simply create one in the same
+              directory with the processing instruction <?eclipse.ant.import?>
+              as the first entry and export the buildfile again. -->
+<project basedir="." default="build" name="javacsv">
+	<property environment="env" />
+	<property name="buffered-io.location" value="../buffered-io" />
+	<property name="escape-test.location" value="../escape-test" />
+	<property name="escapes.location" value="../escapes" />
+	<property name="flexible-read-display-csv.location" value="../flexible-read-display-csv" />
+	<property name="flexible-read-display-csv-grade.location" value="../flexible-read-display-csv-grade" />
+	<property name="open-save-ss.location" value="../open-save-ss" />
+	<property name="read-write-csv.location" value="../read-write-csv" />
+	<property name="simple-read-display-csv.location" value="../simple-read-display-csv" />
+	<property name="stat-greatest-val-csv.location" value="../stat-greatest-val-csv" />
+	<property name="stat-greatest-val-csv-grade.location" value="../stat-greatest-val-csv-grade" />
+	<property name="stat-median-csv.location" value="../stat-median-csv" />
+	<property name="stat-median-csv-grade.location" value="../stat-median-csv-grade" />
+	<property name="stats-csv.location" value="../stats-csv" />
+	<property name="write-html-csv.location" value="../write-html-csv" />
+	<property name="debuglevel" value="source,lines,vars" />
+	<property name="target" value="1.7" />
+	<property name="source" value="1.7" />
+	<path id="javacsv.classpath">
+		<pathelement location="bin" />
+	</path>
+	<target name="init">
+		<mkdir dir="bin" />
+		<copy includeemptydirs="false" todir="bin">
+			<fileset dir="src">
+				<exclude name="**/*.launch" />
+				<exclude name="**/*.java" />
+			</fileset>
+		</copy>
+	</target>
+	<target name="clean">
+		<delete dir="bin" />
+		<delete>
+			<fileset dir="." includes="**/*.class" />
+		</delete>
+	</target>
+	<target depends="clean" name="cleanall" />
+	<target depends="build-subprojects,build-project" name="build" />
+	<target name="build-subprojects" />
+	<target depends="init" name="build-project">
+		<echo message="${ant.project.name}: ${ant.file}" />
+		<javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
+			<src path="src" />
+			<classpath refid="javacsv.classpath" />
+		</javac>
+	</target>
+	<target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects">
+		<ant antfile="build.xml.export" dir="${buffered-io.location}" inheritAll="false" target="clean" />
+		<ant antfile="build.xml.export" dir="${buffered-io.location}" inheritAll="false" target="build" />
+		<ant antfile="build.xml.export" dir="${escape-test.location}" inheritAll="false" target="clean" />
+		<ant antfile="build.xml.export" dir="${escape-test.location}" inheritAll="false" target="build" />
+		<ant antfile="build.xml.export" dir="${escapes.location}" inheritAll="false" target="clean" />
+		<ant antfile="build.xml.export" dir="${escapes.location}" inheritAll="false" target="build" />
+		<ant antfile="build.xml.export" dir="${flexible-read-display-csv.location}" inheritAll="false" target="clean" />
+		<ant antfile="build.xml.export" dir="${flexible-read-display-csv.location}" inheritAll="false" target="build" />
+		<ant antfile="build.xml.export" dir="${flexible-read-display-csv-grade.location}" inheritAll="false" target="clean" />
+		<ant antfile="build.xml.export" dir="${flexible-read-display-csv-grade.location}" inheritAll="false" target="build" />
+		<ant antfile="build.xml.export" dir="${open-save-ss.location}" inheritAll="false" target="clean" />
+		<ant antfile="build.xml.export" dir="${open-save-ss.location}" inheritAll="false" target="build" />
+		<ant antfile="build.xml.export" dir="${read-write-csv.location}" inheritAll="false" target="clean" />
+		<ant antfile="build.xml.export" dir="${read-write-csv.location}" inheritAll="false" target="build" />
+		<ant antfile="build.xml.export" dir="${simple-read-display-csv.location}" inheritAll="false" target="clean" />
+		<ant antfile="build.xml.export" dir="${simple-read-display-csv.location}" inheritAll="false" target="build" />
+		<ant antfile="build.xml.export" dir="${stat-greatest-val-csv.location}" inheritAll="false" target="clean" />
+		<ant antfile="build.xml.export" dir="${stat-greatest-val-csv.location}" inheritAll="false" target="build" />
+		<ant antfile="build.xml.export" dir="${stat-greatest-val-csv-grade.location}" inheritAll="false" target="clean" />
+		<ant antfile="build.xml.export" dir="${stat-greatest-val-csv-grade.location}" inheritAll="false" target="build" />
+		<ant antfile="build.xml.export" dir="${stat-median-csv.location}" inheritAll="false" target="clean" />
+		<ant antfile="build.xml.export" dir="${stat-median-csv.location}" inheritAll="false" target="build" />
+		<ant antfile="build.xml.export" dir="${stat-median-csv-grade.location}" inheritAll="false" target="clean" />
+		<ant antfile="build.xml.export" dir="${stat-median-csv-grade.location}" inheritAll="false" target="build" />
+		<ant antfile="build.xml.export" dir="${stats-csv.location}" inheritAll="false" target="clean" />
+		<ant antfile="build.xml.export" dir="${stats-csv.location}" inheritAll="false" target="build" />
+		<ant antfile="build.xml.export" dir="${write-html-csv.location}" inheritAll="false" target="clean" />
+		<ant antfile="build.xml.export" dir="${write-html-csv.location}" inheritAll="false" target="build" />
+	</target>
+</project>

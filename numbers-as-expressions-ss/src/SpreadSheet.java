@@ -103,14 +103,8 @@ public class SpreadSheet extends JFrame {
                 if (cells[row][col].bottom) return null;
                 return cellsTF[row][col].getText();
             }
-        } else {
-            try {
-                if (Double.parseDouble(tok) >= 0 || Double.parseDouble(tok) <= 0) {
-                    return tok;
-                }
-            } catch (Exception e) {   
-            }
-            return null;
+        } else if (isDouble(tok)) {
+            return tok;
         }
         return null;
     }
@@ -137,24 +131,29 @@ public class SpreadSheet extends JFrame {
                                Double.parseDouble(y.trim()));
     }
     
-    private String negateUnary (StringTokenizer tokens, int depth) {
-        boolean isNegative = false;
-        String tok = null;
+    public boolean isDouble(String s) {
         try {
-            while (tokens.hasMoreTokens()) {
-                tok = tokens.nextToken();
-                if (tok.equals("-")) {
-                    isNegative = !isNegative;
-                } else {
-                    tok = evaluateToken(tok, depth);
-                    tok = isNegative ? String.valueOf(Double.parseDouble(tok) * -1) : tok;
-                    break;
-                }
-            } 
-            return tok;
+            Double.parseDouble(s);
+            return true;
         } catch (Exception e) {
+            return false;
         }
-        return null;
+    }
+    
+    public String parseUnary(StringTokenizer tokens, int depth) {
+        String tok = null;
+        
+        if (tokens.hasMoreTokens() && (tok = tokens.nextToken()).equals("-")) {
+            int negator = -1;
+            
+            while ((tok = tokens.nextToken()).equals("-")) {
+                negator *= -1;
+            }
+            
+            if (!isDouble(evaluateToken(tok, depth))) return null;
+            return "" + negator * Double.parseDouble(evaluateToken(tok, depth));
+        }
+        return evaluateToken(tok, depth);
     }
     
     // parse and evaluate formula after it has been broken into tokens
@@ -168,15 +167,13 @@ public class SpreadSheet extends JFrame {
     public String parseFormula(StringTokenizer tokens, int depth) 
             throws NumberFormatException {
         if (tokens.hasMoreTokens()) {
-            String tok = negateUnary(tokens,depth);
-            System.out.println(tok);
+            String tok = parseUnary(tokens, depth);
             if (tok == null) return null;
             while (tokens.hasMoreTokens()) {
                 String tok2 = tokens.nextToken();
                 if (tok2 == null) return null;
                 if (!tokens.hasMoreTokens()) return null;
-                String tok3 = negateUnary(tokens, depth);
-                System.out.println(tok3);
+                String tok3 = parseUnary(tokens, depth);
                 if (tok3 == null) return null;
                 if (tok2.equals("+")) {
                     tok = add(tok, tok3);

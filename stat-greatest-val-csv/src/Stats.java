@@ -1,47 +1,52 @@
+import java.util.Arrays;
 
 public class Stats {
+    private int rows;
+    private int cols;
+    private String[][] data;
+    
     public Stats(int rows, int cols, String[][] data) {
-        greatestValue(rows, cols, data);
+        this.rows = rows;
+        this.cols = cols;
+        this.data = data;
+        greatestValue();
     }
     
-    public void writeData(int rows, int cols, String[][] data) {
-        for (int x = 0; x < rows; x++) {
-            for (int j = 0; j < cols; j++) {
-                System.out.print(data[x][j]);
+    public void greatestValue() {
+        for (int j = 2; j < cols; j++) {
+            String[] values = new String[rows - 1];
+            for (int i = 1; i < rows; i++) {
+                values[i - 1] = data[i][j];
             }
-            System.out.println();
+            data[rows][j] = computeGreatestVal(values);
         }
-    }
-    
-    private void greatestValue(int rows, int cols, String[][] data) {
-        String [] values;
-        int i;
-        
-        for (int colI = 2; colI < cols; colI++) {
-            values = new String[rows - 1];
-            i = 0;
-            for (int rowI = 1; rowI < rows; rowI++) {
-                values[i] = data[rowI][colI];
-                i++;
-            }
-            data[rows][colI] = findGreatestValue(values);
-        }
-        
         data[rows][0] = "Greatest";
         data[rows][1] = "Value";
     }
-    
-    private String findGreatestValue (String[] values) {
-        String greatestValue = values[0];
+
+    private String computeGreatestVal(String[] values) {
+        // TODO Auto-generated method stub
         try {
-            for (int i = 0; i < values.length - 1; i++) {
-                if (Double.parseDouble(greatestValue) < Double.parseDouble(values[i + 1])) {
-                    greatestValue = values[i + 1];
+            // Initially assign first value as greatestVal
+            Double greatestVal = Double.parseDouble(values[0]);
+            
+            for (int i = 1; i < values.length; i++) {
+                if (Double.parseDouble(values[i]) > greatestVal) {
+                    greatestVal = Double.parseDouble(values[i]);
                 }
             }
-            return greatestValue;
-        } catch (Exception e) {   
+            return "" + greatestVal.intValue(); 
+        } catch (Exception e) {
+            return null;
         }
-        return null;
+    }
+    
+    public void writeData(int rows, int cols, String[][] data) {
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                System.out.print(data[i][j]);
+            }
+            System.out.println("");
+        }
     }
 }

@@ -1,10 +1,11 @@
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.util.Vector;
+
 import com.csvreader.*;
 
 public class WriteHtml {
@@ -14,51 +15,65 @@ public class WriteHtml {
     public static void main(String[] args) {
         // ... insert code here ...
     	//  Do not change the signature of this method.
-        BufferedReader reader = null;
-        BufferedWriter writer = null;
+        
+        CsvReader input;
+        BufferedWriter output;
         
         try {
-            reader = new BufferedReader(new FileReader(inFileName));    
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            //use buffering, reading one line at a time
+            input =  new CsvReader(inFileName);
+        } catch (FileNotFoundException ex) {
+            System.out.println("Could not open " + inFileName);
+            ex.printStackTrace();
+            return;
         }
-        
         try {
-            writer = new BufferedWriter(new FileWriter(outFileName));    
-            int val;
-            writer.write("<html>\n" + 
+            output = new BufferedWriter(new FileWriter(outFileName));
+        } catch (IOException ex) {
+            System.out.println("File IO Error opening " + outFileName);
+            ex.printStackTrace();
+            return;
+        }       
+        try {
+            output.write("<html>\n" + 
                     "  <head>\n" + 
-                    "    <title>test.csv</title>\n" + 
+                    "    <title>" + inFileName + "</title>\n" + 
                     "  </head>\n" + 
                     "  <body>\n" + 
                     "    <table style=\" text-align: left;\" border=\"1\"\n" + 
                     "      cellpadding=\"2\" cellspacing=\"2\">\n" + 
                     "      <tbody>");
-            writer.write("<tr>");
             
-            while ((val = reader.read()) != -1) {
-                if ((char) val == ' ') continue;
-                if ((char) val == ',') continue;
-                if (val == '\n') {
-                    writer.write("</tr>");
-                    val = reader.read();
-                    if (val == - 1) break;
-                    writer.write("<tr>");
+            while (input.readRecord()) {
+                output.write("<tr>");
+                for (int i = 0; i < input.getColumnCount(); i++) {
+                    output.write("<td>");
+                    output.write(EscapeHTML.stringToHTMLString(input.get(i)));
+                    output.write("</td>");
                 }
-                writer.write("<td>");
-                writer.write(EscapeHTML.stringToHTMLString(String.valueOf((char) val)));
-                writer.write("</td>");      
+                output.write("</tr>");
             }
             
-            writer.write("      </tbody>\n" + 
+            output.write("</tbody>\n" + 
                     "    </table>\n" + 
                     "    <br>\n" + 
                     "  </body>\n" + 
                     "</html>");
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+            
+            System.out.println("Copied " + inFileName + " to " + outFileName);
+        } catch (IOException ex) {
+            System.out.println("File IO Error encountered.");
+            ex.printStackTrace();
         }
-
+        try {
+            input.close();
+        } catch (Exception ex) {
+            // assume an earlier error caused this and was already reported
+        }
+        try {
+            output.close();
+        } catch (IOException ex) {
+            // assume an earlier error caused this and was already reported
+        }
     }
 }

@@ -1,6 +1,10 @@
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+
+import java.util.EmptyStackException;
+import java.util.LinkedList;
+import java.util.Stack;
 import java.util.StringTokenizer;
 
 /* SpreadSheet implements an array of cells within a graphical
@@ -92,9 +96,6 @@ public class SpreadSheet extends JFrame {
     // parameter keeps track of the length of the dependency chain.
     // Returns a string if value is valid, otherwise null.
     public String evaluateToken(String tok, int depth) {
-        if (tok.endsWith(")")) {
-            tok = tok.substring(0, tok.length() - 1);
-        }
         if (tok.length() >= 2 && tok.charAt(0) >= 'A' && 
             tok.charAt(0) < (char) ('A' + maxCols)) {
             int col = tok.charAt(0) - 'A';
@@ -105,13 +106,6 @@ public class SpreadSheet extends JFrame {
                 }
                 if (cells[row][col].bottom) return null;
                 return cellsTF[row][col].getText();
-            }
-        } else {
-            try {
-               if (Double.parseDouble(tok) >= 0 || Double.parseDouble(tok) <= 0) {
-                   return tok;
-               }
-            } catch (Exception e) {
             }
         }
         return null;
@@ -139,6 +133,94 @@ public class SpreadSheet extends JFrame {
                                Double.parseDouble(y.trim()));
     }
     
+    public boolean isOperator(String token) {
+        return token.length() == 1 && ("*+/-").contains(token);
+    }
+    
+    public boolean isCellRef(String token) {
+        return token.matches("^[A-Z]\\d+$");
+    }
+    
+    public String solve(String left, String right, String operator) {
+        if (operator.equals("+")) {
+            return add(left, right);
+        } else if (operator.equals("*")) {
+            return multiply(left, right);
+        } else if (operator.equals("/")) {
+            return divide(left, right);
+        } else if (operator.equals("-")) {
+            return subtract(left, right);
+        } else {
+            return null;
+        }
+    }
+    
+    public String parseFormulaWithParens(StringTokenizer tokens, int depth) {
+        try {
+            Stack<String> stack = new Stack<>();
+            LinkedList<String> list = new LinkedList<>();
+            String tok = null;
+            
+            while (tokens.hasMoreTokens()) {
+               tok = tokens.nextToken();
+               if (isCellRef(tok)) {
+                   list.add(tok);
+               } else if (isOperator(tok)) {
+                   while (!stack.isEmpty() && isOperator(stack.peek())) {
+                       list.add(stack.pop());
+                   }
+                   stack.push(tok);
+               } else if (tok.equals("(")) {
+                   stack.push("(");
+               } else if (tok.equals(")")) {
+                   while (!stack.isEmpty() && !stack.peek().equals("(")) {
+                       list.add(stack.pop());
+                   }
+                   stack.pop();
+               } else {
+                   return null;
+               }
+            }
+            
+            while (stack.size() != 0) {
+                list.add(stack.pop());
+            }
+            
+            stack = new Stack<>();
+            
+            for (String token: list) {
+                if (isCellRef(token)) {
+                    stack.push(token);
+                } else {
+                    if (stack.size() < 1) return null;
+                    String left = stack.pop();
+                    if (stack.size() < 1) return null;
+                    String right = stack.pop();
+                    
+                    if (isCellRef(left)) left = evaluateToken(left, depth);
+                    if (isCellRef(right)) right = evaluateToken(right, depth);
+                    if (left == null || right == null) return null;
+                    
+                    tok = solve(left, right, token);
+                    if (tok == null) return null;
+                    stack.push(tok);
+                }
+            }
+            
+            if (stack.size() == 1) {
+                if (isCellRef(stack.peek())) {
+                    return evaluateToken(stack.pop(), depth); 
+                } else {
+                    return stack.pop();
+                }
+            }
+            
+            return null; 
+        } catch (EmptyStackException e) {
+            return null;    
+        }
+    }
+    
     // parse and evaluate formula after it has been broken into tokens
     // formulas are tokens containing either
     // 1. references to cells of the form Lnn, where
@@ -151,15 +233,13 @@ public class SpreadSheet extends JFrame {
             throws NumberFormatException {
         if (tokens.hasMoreTokens()) {
             String tok = tokens.nextToken();
-            if (tok.equals("(")) tok = parseFormula(tokens, depth);
-                tok = evaluateToken(tok, depth);
-                if (tok == null) return null;     
+            tok = evaluateToken(tok, depth);
+            if (tok == null) return null;
             while (tokens.hasMoreTokens()) {
                 String tok2 = tokens.nextToken();
                 if (tok2 == null) return null;
                 if (!tokens.hasMoreTokens()) return null;
                 String tok3 = tokens.nextToken();
-                if (tok3.equals("(")) tok3 = parseFormula(tokens, depth);
                 tok3 = evaluateToken(tok3, depth);
                 if (tok3 == null) return null;
                 if (tok2.equals("+")) {
@@ -187,11 +267,16 @@ public class SpreadSheet extends JFrame {
         if (formula.length() > 0 && formula.charAt(0) == '=') {
             try {
                 if (depth <= maxRows * maxCols) {
-                    StringTokenizer tokens = 
-                            new StringTokenizer(formula, "=+*/-(", true);
+                    StringTokenizer tokens = new StringTokenizer(formula, "=+*/-()", true);
+                    String val = null;
                     if (tokens.hasMoreTokens() && 
                         (tokens.nextToken().equals("="))) {
-                        String val = parseFormula(tokens, depth);
+                        if (formula.contains("(") || formula.contains(")")) {
+                            val = parseFormulaWithParens(tokens, depth);
+                        }
+                        else {
+                            val = parseFormula(tokens, depth);
+                        }
                         if (val != null) {
                             cellsTF[r][c].setText(val);
                             cells[r][c].valid = true;

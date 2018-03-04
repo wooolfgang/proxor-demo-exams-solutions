@@ -26,19 +26,17 @@ public class ReadFileWriteToConsole {
     public void readSheet() throws IOException {
     	// ... insert code here ...
     	//  Do not change the signature of this method.
-        try {
-            CsvReader r = new CsvReader(inFile);
-            int rowI = 0;
-            while (r.readRecord() && rowI < MAXROW) {
-                for (int colI = 0; colI < MAXCOL; colI++) {
-                    sheet[rowI][colI] = r.get(colI);
-                }
-                rowI++;
+        CsvReader reader = new CsvReader(inFile);
+        int row = 0;
+        
+        while (reader.readRecord()) {
+            for (int col = 0; col < reader.getColumnCount(); col++) {
+                sheet[row][col] = reader.get(col);
             }
-            r.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            row++;
         }
+        
+        reader.close();
 	}
 	   
 	public void writeSheet(){
@@ -48,7 +46,7 @@ public class ReadFileWriteToConsole {
 	        for (int j = 0; j < MAXCOL; j++) {
 	            System.out.print("[" + sheet[i][j] + "]");
 	        }
-	        System.out.println();
+	        System.out.println("");
 	    }
 	}
 }

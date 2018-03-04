@@ -85,7 +85,7 @@ public class SpreadSheet extends JFrame {
     public String getCellText(int row, int col) {
     	return cellsTF[row][col].getText();
     }
-   
+    
 
     // evaluate a token, which may be a reference to another cell or
     // simply a string. To avoid circular dependencies, the depth
@@ -129,65 +129,8 @@ public class SpreadSheet extends JFrame {
                                Double.parseDouble(y.trim()));
     }
     
-    private boolean isSameRow(String c1, String c2) {
-        if (c1.charAt(1) == c2.charAt(1)) {
-            return true;
-        }
-        return false;
-    }
-    
-    private boolean isSameCol(String c1, String c2) {
-        if (c1.charAt(0) == c2.charAt(0)) {
-            return true;
-        }
-        return false;
-    }
-    
-    // evaluate the sum of cells from c1:c2
-    private String evaluateFormula(StringTokenizer tokens, int depth) {
-        if (tokens.nextToken().equals("(")) {
-            String c1 = tokens.nextToken();
-            if (c1 == null) return null;
-            if (!tokens.nextToken().equals(":")) return null;
-            String c2 = tokens.nextToken();
-            if (evaluateToken(c1, depth) == null || evaluateToken(c2, depth) == null) return null;
-            char fixedChar = c1.charAt(0), dynamicC1 = c1.charAt(1), dynamicC2 = c2.charAt(1);
-                       
-            if (isSameRow(c1, c2)) {
-                dynamicC1 = c1.charAt(0);
-                dynamicC2 = c2.charAt(0);
-                fixedChar = c1.charAt(1);
-            }
-            
-            char start = dynamicC1, end = dynamicC2;
-            String total = "0";
-            boolean isNull = false;
-            
-            if (dynamicC1 > dynamicC2) {
-                start = dynamicC2;
-                end = dynamicC1;
-            }
-            
-            for (char i = start; i <= end; i++) {
-                String token = "";
-                
-                if (isSameRow(c1, c2)) {
-                    token = i + "" + fixedChar;
-                } else if (isSameCol(c1, c2)) {
-                    token = fixedChar + "" + i;
-                }
-                
-                token = evaluateToken(token, depth);
-                if (token == null) {isNull = true; break; };
-                total = add(total, token);
-            }
-          
-            if (isNull == true) return null;
-            if (!tokens.hasMoreTokens()) return null;
-            if (!tokens.nextToken().equals(")") ) return null;
-            return total;
-        }
-        return null;
+    public boolean isCellRef(String token) {
+        return token.matches("^[A-Z]\\d+$");
     }
     
     // parse and evaluate formula after it has been broken into tokens
@@ -202,19 +145,16 @@ public class SpreadSheet extends JFrame {
             throws NumberFormatException {
         if (tokens.hasMoreTokens()) {
             String tok = tokens.nextToken();
-            if (tok.equals("SUM")) {
-              tok = evaluateFormula(tokens, depth);  
-              if (tok == null) return null;
-              return tok;
-            } 
-            tok = evaluateToken(tok, depth);
+            if (tok.equals("SUM")) tok = parseSum(tokens, depth);
+            else tok = evaluateToken(tok, depth);
             if (tok == null) return null;
             while (tokens.hasMoreTokens()) {
                 String tok2 = tokens.nextToken();
                 if (tok2 == null) return null;
                 if (!tokens.hasMoreTokens()) return null;
                 String tok3 = tokens.nextToken();
-                tok3 = evaluateToken(tok3, depth);
+                if (tok3.equals("SUM")) tok3 = parseSum(tokens, depth);
+                else tok3 = evaluateToken(tok3, depth);
                 if (tok3 == null) return null;
                 if (tok2.equals("+")) {
                     tok = add(tok, tok3);
@@ -231,6 +171,53 @@ public class SpreadSheet extends JFrame {
         return null;
     }
     
+    private String parseSum(StringTokenizer tokens, int depth) {
+        // TODO Auto-generated method stub
+        if (tokens.hasMoreTokens() && tokens.nextToken().equals("(")) {
+            if (!tokens.hasMoreTokens()) return null;
+            String c1 = tokens.nextToken();
+            if (!tokens.hasMoreTokens()) return null;
+            tokens.nextToken();
+            if (!tokens.hasMoreTokens()) return null;
+            String c2 = tokens.nextToken();
+            if (c1 == null || c2 == null) return null;
+            if (!isCellRef(c1) || !isCellRef(c2)) return null;
+            
+            // at least a row or column should be equal
+            if (c1.charAt(0) == c2.charAt(0) || c2.charAt(1) == c2.charAt(1)) {
+                int sameCellIndex = c1.charAt(0) == c2.charAt(0) ? 0 : 1;
+                int diffCellIndex = sameCellIndex == 0 ? 1 : 0;
+                
+                char lowerCell = (char) Math.min(c1.charAt(diffCellIndex), c2.charAt(diffCellIndex));
+                char higherCell = (char) Math.max(c1.charAt(diffCellIndex), c2.charAt(diffCellIndex));
+                Double total = 0.0;
+                
+                for (char i = lowerCell; i <= higherCell; i++) {
+                    String val = null;
+                    if (sameCellIndex == 0) {
+                        val = evaluateToken("" + c1.charAt(sameCellIndex) + i, depth);
+                    } else {
+                        val = evaluateToken("" + i + c1.charAt(sameCellIndex), depth);
+                    }
+                    
+                    if (val == null) return null;
+                    
+                    try {
+                        total += Double.parseDouble(val);
+                    } catch (Exception e) {
+                        return null;
+                    }
+                }
+                
+                if (!tokens.hasMoreTokens()) return null;
+                if (!tokens.nextToken().equals(")")) return null;
+                return total.toString();
+            }
+            return null;
+        } 
+        return null;
+    }
+
     // evaluate a given cell. Cells can depend on other cells. To prevent
     // infinite recursion in the case of cycles, depth keeps track of the
     // length of the dependency chain. The longest chain involves all cells
@@ -241,7 +228,8 @@ public class SpreadSheet extends JFrame {
         if (formula.length() > 0 && formula.charAt(0) == '=') {
             try {
                 if (depth <= maxRows * maxCols) {
-                    StringTokenizer tokens = new StringTokenizer(formula, "=+*/-():", true);
+                    StringTokenizer tokens = 
+                            new StringTokenizer(formula, "=+*/-():", true);
                     if (tokens.hasMoreTokens() && 
                         (tokens.nextToken().equals("="))) {
                         String val = parseFormula(tokens, depth);

@@ -1,44 +1,52 @@
+import java.util.Arrays;
 
 public class Stats {
+    private int cols;
+    private int rows;
+    private String[][] data;
+
     public Stats(int rows, int cols, String[][] data) {
-        computeMedians(rows, cols, data);
+        this.rows = rows;
+        this.cols = cols;
+        this.data = data;
+        computeMedians();
     }
-    
-    public void computeMedians(int rows, int cols, String[][] data) {
-        String values[] = new String[rows - 1];
-        int x;
-        for (int i = 2; i < cols; i++) {
-            x = 0;
-            for (int j = 1; j < rows; j++) {
-                values[x] = data[j][i];
-                x++;
+
+    private void computeMedians() {
+        // TODO Auto-generated method stub
+        for (int j = 2; j < cols; j++) {
+            String[] values = new String[rows - 1];
+            for (int i = 1; i < rows; i++) {
+                values[i - 1] = data[i][j];
             }
-            data[rows][i] = getMedian(sortByAscending(values));
+            data[rows][j] = computeMedian(values);
         }
         data[rows][0] = "";
         data[rows][1] = "Median";
     }
-    
-    private String getMedian(String[] values) {
-        if (values.length % 2 == 0) {
-            String a = values[(values.length / 2) - 1];
-            String b = values[values.length / 2];
-            double average = (Double.parseDouble(a) + Double.parseDouble(b)) / 2;
-            return String.valueOf((int) Math.ceil(average));
-        }
-        return values[((values.length - 1) / 2) + 1];
-    }
-    
-    private String[] sortByAscending(String[] values) {
-        for (int i = 0; i < values.length - 1; i++) {
-            for (int j = i + 1; j < values.length; j++) {
-                if (Double.parseDouble(values[i]) < Double.parseDouble(values[j])) {
-                    String temp = values[i];
-                    values[i] = values[j];
-                    values[j] = temp;
-                }
+
+    private String computeMedian(String[] values) {
+        // TODO Auto-generated method stub
+        try {
+            Double[] newValues = new Double[values.length];
+            
+            for (int i = 0; i < values.length; i++) {
+                newValues[i] = Double.parseDouble(values[i]);
             }
-        }
-        return values;
+            
+            Arrays.sort(newValues);
+            
+            if (newValues.length % 2 == 0) {
+                Double m1 = newValues[(newValues.length / 2) - 1];
+                Double m2 = newValues[newValues.length / 2];
+                Double median = (m1 + m2) / 2;
+                return "" + (int) Math.ceil(median);
+            } else {
+                Double median = newValues[(int) Math.ceil(newValues.length / 2)];
+                return "" + median;
+            }
+        } catch (Exception e) {
+            return null;
+        }   
     }
 }
